@@ -56,11 +56,18 @@ CONF_THRESHOLD = 0.20  # Ngưỡng tin cậy nhận diện lửa tối ưu cho v
 ALERT_COOLDOWN = 10    # Đúng 10 giây nếu vẫn phát hiện lửa thì gửi thông báo tiếp
 
 def get_models_list():
-    """Quét và lấy danh sách các file .pt trong thư mục models"""
-    base_dir = "models" if os.path.exists("models") else "fire_app_deployment/models"
+    """Quét và lấy danh sách các file .pt trong thư mục models của yolov5"""
+    possible_dirs = [
+        os.path.join("yolov5", "yolov5_models"),
+        os.path.join("yolov5", "models"),
+        "yolov5",
+        "models",
+        "fire_app_deployment/models"
+    ]
+    base_dir = next((d for d in possible_dirs if os.path.exists(d) and any(f.endswith('.pt') for f in os.listdir(d))), os.path.join("yolov5", "yolov5_models"))
     models = []
     if os.path.exists(base_dir):
-        for f in os.listdir(base_dir):
+        for f in sorted(os.listdir(base_dir)):
             if f.endswith(".pt"):
                 models.append((f, os.path.join(base_dir, f)))
     return models
@@ -186,7 +193,8 @@ def select_options():
     while True:
         # Xác định đường dẫn model đang chọn
         models_dict = dict(get_models_list())
-        current_model_path = models_dict.get(selected_model_name, os.path.join("models", selected_model_name))
+        fallback_path = os.path.join("yolov5", "yolov5_models", selected_model_name)
+        current_model_path = models_dict.get(selected_model_name, fallback_path)
         if not os.path.exists(current_model_path):
             # Nếu không tìm thấy, lấy file đầu tiên có sẵn
             if models_dict:

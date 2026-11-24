@@ -80,7 +80,15 @@ if st.sidebar.button("💾 Lưu cấu hình & Test kết nối"):
 st.sidebar.markdown("---")
 st.sidebar.header("🧠 Chọn Mô Hình (Model) Để Test")
 
-base_dir = "models" if os.path.exists("models") else "fire_app_deployment/models"
+possible_dirs = [
+    os.path.join("yolov5", "yolov5_models"),
+    os.path.join("yolov5", "models"),
+    "yolov5",
+    "models",
+    "fire_app_deployment/models"
+]
+base_dir = next((d for d in possible_dirs if os.path.exists(d) and any(f.endswith('.pt') for f in os.listdir(d))), os.path.join("yolov5", "yolov5_models"))
+
 available_model_files = []
 if os.path.exists(base_dir):
     for f in sorted(os.listdir(base_dir)):
